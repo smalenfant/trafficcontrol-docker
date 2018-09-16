@@ -1,0 +1,11 @@
+FROM golang:1.11.0 as builder
+RUN go get -v github.com/apache/trafficcontrol/traffic_stats
+
+FROM centos:7
+WORKDIR /root/
+COPY --from=builder go/bin/traffic_stats .
+RUN mkdir -p /opt/traffic_stats/var/run && mkdir -p /opt/traffic_stats/var/log
+# TODO: Copy from builder instead?
+ADD https://raw.githubusercontent.com/apache/trafficcontrol/master/traffic_stats/traffic_stats.cfg /opt/traffic_stats/conf/traffic_stats.cfg
+ADD https://raw.githubusercontent.com/apache/trafficcontrol/master/traffic_stats/traffic_stats_seelog.xml /opt/traffic_stats/conf/traffic_stats_seelog.xml
+CMD ["./traffic_stats","-cfg","/opt/traffic_stats/conf/traffic_stats.cfg"]  
